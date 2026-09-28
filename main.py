@@ -237,48 +237,40 @@ st.markdown(
 st.divider()
 
 # ─────────────────────────────────────
-# 그래프 8. 10위권 체류 기간과 총 관객의 관계
+# 그래프 8. 개봉 첫 주 관객과 총 관객의 관계
 # ─────────────────────────────────────
-st.header("그래프 8")
+st.header("그래프 8. 개봉 첫 주 관객이 많은 영화는 총 관객도 많은가?")
 
-question = "10위권에 오래 머문 영화는 총 관객도 많은가"
-st.subheader(question)
-
-scatter_df = df[["movieNm", "days_in_top10", "total_audi"]].copy()
-scatter_df["days_in_top10"] = pd.to_numeric(
-    scatter_df["days_in_top10"], errors="coerce"
+scatter_df = df[["movieNm", "first_week_audi", "total_audi"]].copy()
+scatter_df["first_week_audi"] = pd.to_numeric(
+    scatter_df["first_week_audi"], errors="coerce"
 )
 scatter_df["total_audi"] = pd.to_numeric(
     scatter_df["total_audi"], errors="coerce"
 )
 scatter_df = scatter_df.dropna(
-    subset=["movieNm", "days_in_top10", "total_audi"]
+    subset=["first_week_audi", "total_audi"]
 )
 
 fig8 = px.scatter(
     scatter_df,
-    x="days_in_top10",
+    x="first_week_audi",
     y="total_audi",
-    custom_data=["movieNm"],
-    title=question,
+    hover_name="movieNm",
+    title="개봉 첫 주 관객이 많은 영화는 총 관객도 많은가?",
     labels={
-        "days_in_top10": "10위권에 머문 날수",
+        "first_week_audi": "개봉 첫 주 관객",
         "total_audi": "총 관객",
     },
 )
 
 fig8.update_traces(
-    hovertemplate=(
-        "<b>%{customdata[0]}</b>"
-        "<br>10위권에 머문 날수: %{x}일"
-        "<br>총 관객: %{y:,}명"
-        "<extra></extra>"
-    )
+    hovertemplate="<b>%{hovertext}</b><br>"
+                  "개봉 첫 주 관객: %{x:,}명<br>"
+                  "총 관객: %{y:,}명<extra></extra>"
 )
 
 fig8.update_layout(
-    xaxis_title="10위권에 머문 날수",
-    yaxis_title="총 관객",
     margin=dict(t=60, b=20, l=20, r=20),
 )
 
@@ -286,7 +278,7 @@ st.plotly_chart(fig8, use_container_width=True)
 
 st.markdown(
     "**이 그래프로 알 수 있는 것:** "
-    "10위권에 머문 날수와 총 관객 사이에 어떤 관계가 있는지 살펴볼 수 있습니다."
+    "개봉 첫 주 관객 수와 총 관객 수 사이에 어떤 관계가 있는지 살펴볼 수 있습니다."
 )
 
 st.divider()
