@@ -53,6 +53,7 @@ def load_data():
 
 df = load_data()
 
+
 # ─────────────────────────────────────
 # 그래프 1. 장르별 영화 편수
 # ─────────────────────────────────────
@@ -65,7 +66,7 @@ genre_counts = (
     .reset_index(name="영화 편수")
 )
 
-fig = px.pie(
+fig1 = px.pie(
     genre_counts,
     names="장르",
     values="영화 편수",
@@ -73,16 +74,20 @@ fig = px.pie(
     title="장르별 영화 편수",
 )
 
-fig.update_traces(
-    hovertemplate="<b>%{label}</b><br>영화 편수: %{value}편<br>비율: %{percent}<extra></extra>"
+fig1.update_traces(
+    hovertemplate=(
+        "<b>%{label}</b><br>"
+        "영화 편수: %{value}편<br>"
+        "비율: %{percent}<extra></extra>"
+    )
 )
 
-fig.update_layout(
+fig1.update_layout(
     legend_title_text="장르",
     margin=dict(t=60, b=20, l=20, r=20),
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig1, use_container_width=True)
 
 st.markdown(
     "**이 그래프로 알 수 있는 것:** "
@@ -91,15 +96,21 @@ st.markdown(
 
 st.divider()
 
+
 # ─────────────────────────────────────
 # 그래프 2. 장르별 영화 트리맵
 # ─────────────────────────────────────
 st.header("그래프 2. 장르 안에 들어 있는 영화")
 
-treemap_df = df[["genre_first", "movieNm", "total_audi"]].copy()
+treemap_df = df[
+    ["genre_first", "movieNm", "total_audi"]
+].copy()
+
 treemap_df["movieNm"] = treemap_df["movieNm"].fillna("영화명 미상")
+
 treemap_df["total_audi"] = pd.to_numeric(
-    treemap_df["total_audi"], errors="coerce"
+    treemap_df["total_audi"],
+    errors="coerce",
 ).fillna(0)
 
 fig2 = px.treemap(
@@ -110,7 +121,10 @@ fig2 = px.treemap(
 )
 
 fig2.update_traces(
-    hovertemplate="<b>%{label}</b><br>총 관객: %{value:,}명<extra></extra>"
+    hovertemplate=(
+        "<b>%{label}</b><br>"
+        "총 관객: %{value:,}명<extra></extra>"
+    )
 )
 
 fig2.update_layout(
@@ -126,25 +140,41 @@ st.markdown(
 
 st.divider()
 
+
 # ─────────────────────────────────────
 # 그래프 3. 총 관객 분포
 # ─────────────────────────────────────
 st.header("그래프 3. 총 관객 분포")
 
-hist_df = df[["movieNm", "total_audi"]].copy()
-hist_df["total_audi"] = pd.to_numeric(hist_df["total_audi"], errors="coerce")
-hist_df = hist_df.dropna(subset=["total_audi"])
+hist_df = df[
+    ["movieNm", "total_audi"]
+].copy()
+
+hist_df["total_audi"] = pd.to_numeric(
+    hist_df["total_audi"],
+    errors="coerce",
+)
+
+hist_df = hist_df.dropna(
+    subset=["total_audi"]
+)
 
 fig3 = px.histogram(
     hist_df,
     x="total_audi",
     nbins=20,
     title="영화별 총 관객 분포",
-    labels={"total_audi": "총 관객", "count": "영화 편수"},
+    labels={
+        "total_audi": "총 관객",
+        "count": "영화 편수",
+    },
 )
 
 fig3.update_traces(
-    hovertemplate="총 관객: %{x:,}명<br>영화 편수: %{y}편<extra></extra>"
+    hovertemplate=(
+        "총 관객: %{x:,}명<br>"
+        "영화 편수: %{y}편<extra></extra>"
+    )
 )
 
 fig3.update_layout(
@@ -155,30 +185,28 @@ fig3.update_layout(
 
 st.plotly_chart(fig3, use_container_width=True)
 
-# 가장 많은 영화가 들어 있는 구간 계산
-counts, bin_edges = pd.cut(
-    hist_df["total_audi"],
-    bins=20,
-    include_lowest=True,
-    retbins=True,
-).value_counts().sort_index(), None
 
-# 위의 bins와 동일한 구간을 사용하기 위해 다시 계산
+# 가장 많은 영화가 들어 있는 구간
 hist_bins = pd.cut(
     hist_df["total_audi"],
     bins=20,
     include_lowest=True,
 )
+
 most_common_bin = hist_bins.value_counts().idxmax()
 
 # 총 관객이 가장 많은 영화
-max_row = hist_df.loc[hist_df["total_audi"].idxmax()]
+max_row = hist_df.loc[
+    hist_df["total_audi"].idxmax()
+]
+
 max_movie = max_row["movieNm"]
 max_audi = int(max_row["total_audi"])
 
 st.markdown(
     f"**이 그래프로 알 수 있는 것:** "
-    f"대부분의 영화는 **{most_common_bin.left:,.0f}~{most_common_bin.right:,.0f}명** "
+    f"대부분의 영화는 "
+    f"**{most_common_bin.left:,.0f}~{most_common_bin.right:,.0f}명** "
     f"구간에 몰려 있습니다. "
     f"총 관객이 가장 많은 영화는 **{max_movie}**로, "
     f"총 **{max_audi:,}명**을 기록했습니다."
@@ -186,30 +214,45 @@ st.markdown(
 
 st.divider()
 
+
 # ─────────────────────────────────────
 # 그래프 5. 장르별 총 관객 분포
 # ─────────────────────────────────────
 st.header("그래프 5. 장르별 총 관객 분포")
 
 # 영화가 10편 이상인 장르만 선택
-genre_movie_counts = df["genre_first"].value_counts()
-valid_genres = genre_movie_counts[genre_movie_counts >= 10].index
+genre_movie_counts = df[
+    "genre_first"
+].value_counts()
+
+valid_genres = genre_movie_counts[
+    genre_movie_counts >= 10
+].index
 
 box_df = df[
     df["genre_first"].isin(valid_genres)
-][["genre_first", "movieNm", "total_audi"]].copy()
+][
+    ["genre_first", "movieNm", "total_audi"]
+].copy()
 
 box_df["total_audi"] = pd.to_numeric(
-    box_df["total_audi"], errors="coerce"
+    box_df["total_audi"],
+    errors="coerce",
 )
-box_df = box_df.dropna(subset=["total_audi"])
+
+box_df = box_df.dropna(
+    subset=["total_audi"]
+)
 
 fig5 = px.box(
     box_df,
     x="genre_first",
     y="total_audi",
     points="outliers",
-    hover_data={"movieNm": True, "total_audi": ":,d"},
+    hover_data={
+        "movieNm": True,
+        "total_audi": ":,d",
+    },
     title="영화가 10편 이상인 장르별 총 관객 분포",
     labels={
         "genre_first": "장르",
@@ -219,7 +262,10 @@ fig5 = px.box(
 )
 
 fig5.update_traces(
-    hovertemplate="<b>%{customdata[0]}</b><br>총 관객: %{y:,}명<extra></extra>"
+    hovertemplate=(
+        "<b>%{customdata[0]}</b><br>"
+        "총 관객: %{y:,}명<extra></extra>"
+    )
 )
 
 fig5.update_layout(
@@ -236,20 +282,33 @@ st.markdown(
 
 st.divider()
 
+
 # ─────────────────────────────────────
 # 그래프 8. 개봉 첫 주 관객과 총 관객의 관계
 # ─────────────────────────────────────
-st.header("그래프 8. 개봉 첫 주 관객이 많은 영화는 총 관객도 많은가?")
+st.header(
+    "그래프 8. 개봉 첫 주 관객이 많은 영화는 총 관객도 많은가?"
+)
 
-scatter_df = df[["movieNm", "first_week_audi", "total_audi"]].copy()
+scatter_df = df[
+    ["movieNm", "first_week_audi", "total_audi"]
+].copy()
+
 scatter_df["first_week_audi"] = pd.to_numeric(
-    scatter_df["first_week_audi"], errors="coerce"
+    scatter_df["first_week_audi"],
+    errors="coerce",
 )
+
 scatter_df["total_audi"] = pd.to_numeric(
-    scatter_df["total_audi"], errors="coerce"
+    scatter_df["total_audi"],
+    errors="coerce",
 )
+
 scatter_df = scatter_df.dropna(
-    subset=["first_week_audi", "total_audi"]
+    subset=[
+        "first_week_audi",
+        "total_audi",
+    ]
 )
 
 fig8 = px.scatter(
@@ -265,16 +324,22 @@ fig8 = px.scatter(
 )
 
 fig8.update_traces(
-    hovertemplate="<b>%{hovertext}</b><br>"
-                  "개봉 첫 주 관객: %{x:,}명<br>"
-                  "총 관객: %{y:,}명<extra></extra>"
+    hovertemplate=(
+        "<b>%{hovertext}</b><br>"
+        "개봉 첫 주 관객: %{x:,}명<br>"
+        "총 관객: %{y:,}명"
+        "<extra></extra>"
+    )
 )
 
 fig8.update_layout(
     margin=dict(t=60, b=20, l=20, r=20),
 )
 
-st.plotly_chart(fig8, use_container_width=True)
+st.plotly_chart(
+    fig8,
+    use_container_width=True,
+)
 
 st.markdown(
     "**이 그래프로 알 수 있는 것:** "
